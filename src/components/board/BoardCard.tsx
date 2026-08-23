@@ -1,14 +1,26 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Board } from "../../types/board.types";
 
 interface BoardCardProps {
   board: Board;
-  onDelete: (boardId: string) => void;
+  onDelete: (boardId: string) => Promise<void>;
 }
 
 const BoardCard = ({ board, onDelete }: BoardCardProps) => {
-  const handleDelete = () => {
-    onDelete(board.id);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Удалить доску "${board.title}"?`)) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await onDelete(board.id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -31,10 +43,11 @@ const BoardCard = ({ board, onDelete }: BoardCardProps) => {
 
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => void handleDelete()}
+          disabled={isDeleting}
           className="rounded-lg px-6 py-2 font-medium border-red-600 text-red-600 transition hover:bg-red-50"
         >
-          Удалить
+          {isDeleting ? "Удаление..." : "Удалить"}
         </button>
       </div>
     </div>

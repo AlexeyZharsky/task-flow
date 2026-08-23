@@ -1,4 +1,5 @@
 import { useSortable } from "@dnd-kit/react/sortable";
+import { useState } from "react";
 import type { Task } from "../../types/task.types";
 
 interface TaskCardProps {
@@ -8,12 +9,7 @@ interface TaskCardProps {
   onDelete: (taskId: string) => Promise<void>;
 }
 
-const TaskCard = ({
-  task,
-  index,
-  columnId,
-  onDelete,
-}: TaskCardProps) => {
+const TaskCard = ({ task, index, columnId, onDelete }: TaskCardProps) => {
   const sortable = useSortable({
     id: task.id,
     index,
@@ -23,9 +19,19 @@ const TaskCard = ({
     plugins: [],
   });
   const { ref: sortableRef, handleRef } = sortable;
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    await onDelete(task.id);
+    if (!window.confirm(`Удалить задачу "${task.title}"?`)) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await onDelete(task.id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -52,9 +58,10 @@ const TaskCard = ({
         <button
           type="button"
           onClick={() => void handleDelete()}
-          className="text-xs text-zinc-400"
+          disabled={isDeleting}
+          className="text-xs text-zinc-400 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          x
+          {isDeleting ? "Удаление..." : "x"}
         </button>
       </div>
     </article>

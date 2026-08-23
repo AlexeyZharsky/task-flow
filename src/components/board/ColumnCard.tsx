@@ -30,6 +30,7 @@ const ColumnCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(column.title);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleRename = async () => {
     const normalizedTitle = title.trim();
@@ -52,7 +53,16 @@ const ColumnCard = ({
   };
 
   const handleDelete = async () => {
-    await onDelete(column.id);
+    if (!window.confirm(`Удалить колонку "${column.title}"?`)) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await onDelete(column.id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -105,9 +115,10 @@ const ColumnCard = ({
           <button
             type="button"
             onClick={() => void handleDelete()}
-            className="rounded-md px-2 py-1 text-xs text-red-500 hover:bg-red-50"
+            disabled={isDeleting}
+            className="rounded-md px-2 py-1 text-xs text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Удалить
+            {isDeleting ? "Удаление..." : "Удалить"}
           </button>
         </div>
       </div>

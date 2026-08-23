@@ -8,6 +8,10 @@ const Header = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    if (!window.confirm("Выйти из аккаунта?")) {
+      return;
+    }
+
     setIsLoggingOut(true);
 
     try {
@@ -36,9 +40,9 @@ const Header = () => {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Выйти
+            {isLoggingOut ? "Выход..." : "Выйти"}
           </button>
         </div>
       </div>
