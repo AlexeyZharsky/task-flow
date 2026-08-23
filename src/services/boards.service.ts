@@ -14,6 +14,20 @@ export const getBoards = async (): Promise<Board[]> => {
   return data;
 };
 
+export const getBoard = async (boardId: string): Promise<Board | null> => {
+  const { data, error } = await supabase
+    .from("boards")
+    .select("*")
+    .eq("id", boardId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+};
+
 export const createBoard = async (
   input: CreateBoardInput,
   userId: string,
