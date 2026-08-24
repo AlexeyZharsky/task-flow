@@ -171,7 +171,7 @@ const BoardPage = () => {
     <main className="flex min-h-screen flex-col bg-zinc-50">
       <Header />
 
-      <div className="mx-auto flex-1 overflow-x-auto px-4 py-8">
+      <div className="mx-auto max-w-7xl flex-1 overflow-x-auto px-4 py-8">
         {isBoardLoading ? (
           <div className="flex min-h-full gap-4 p-4">
             <div className="h-96 w-80 shrink-0 animate-pulse rounded-xl bg-zinc-200" />
