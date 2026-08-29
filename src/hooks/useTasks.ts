@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createTask,
   deleteTask,
@@ -16,6 +16,8 @@ export const useTasks = (columnIds: string[]) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const reorderQueueRef = useRef(Promise.resolve());
+  const latestOrderRef = useRef(0);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -69,15 +71,26 @@ export const useTasks = (columnIds: string[]) => {
   };
 
   const persistOrder = async (nextTasks: Task[]) => {
-    await reorderTasks(
-      nextTasks.map((task) => ({
-        id: task.id,
-        column_id: task.column_id,
-        position: task.position,
-      })),
-    );
+    const orderVersion = ++latestOrderRef.current;
+    const request = () =>
+      reorderTasks(
+        nextTasks.map((task) => ({
+          id: task.id,
+          column_id: task.column_id,
+          position: task.position,
+        })),
+      );
+    const queuedRequest = reorderQueueRef.current.then(request, request);
 
-    setTasks(nextTasks);
+    reorderQueueRef.current = queuedRequest.then(
+      () => undefined,
+      () => undefined,
+    );
+    await queuedRequest;
+
+    if (orderVersion === latestOrderRef.current) {
+      setTasks(nextTasks);
+    }
   };
 
   return {

@@ -1,7 +1,7 @@
 import { defaultPreset, Feedback } from "@dnd-kit/dom";
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable } from "@dnd-kit/react/sortable";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import ColumnCard from "../components/board/ColumnCard";
 import CreateColumnButton from "../components/board/CreateColumnButton";
@@ -45,6 +45,7 @@ const BoardPage = () => {
     persistOrder,
   } = useTasks(columnIds);
   const [operationError, setOperationError] = useState<string | null>(null);
+  const dragRevisionRef = useRef(0);
   const dndPlugins = useMemo(
     () => (plugins: typeof defaultPreset.plugins) =>
       plugins.map((plugin) =>
@@ -156,6 +157,7 @@ const BoardPage = () => {
       targetColumnId,
       targetIndex,
     );
+    const dragRevision = ++dragRevisionRef.current;
 
     applyLocalOrder(nextTasks);
 
@@ -163,7 +165,9 @@ const BoardPage = () => {
       await persistOrder(nextTasks);
     } catch (error) {
       showError(error, "Не удалось сохранить порядок задач");
-      applyLocalOrder(previousTasks);
+      if (dragRevision === dragRevisionRef.current) {
+        applyLocalOrder(previousTasks);
+      }
     }
   };
 
